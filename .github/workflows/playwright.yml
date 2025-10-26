@@ -16,6 +16,7 @@ jobs:
       USERNAME: ${{ secrets.USERNAME }}
       PASSWORD: ${{ secrets.PASSWORD }}
       WRONG_PASSWORD: ${{ secrets.WRONG_PASSWORD }}
+      BASE_URL: ${{ secrets.BASE_URL }}
 
     steps:
       - name: Checkout repository
@@ -26,11 +27,22 @@ jobs:
         with:
           node-version: 20
 
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Install browsers
-        run: npx playwright install --with-deps
+      - name: Compile TypeScript
+        run: npx tsc --noEmit
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium firefox --with-deps
 
       - name: Run Playwright tests
         run: npx playwright test --reporter=html
