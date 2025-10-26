@@ -1,0 +1,55 @@
+{
+  "cookies": [
+    {
+      "name": "LBL_SessionID",
+      "value": "a0bm3xlm5esmrgzaqmueqrkp",
+      "domain": "lbltc-2.azurewebsites.net",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "__RequestVerificationToken",
+      "value": "MKA3XUPYDPCwokdXzHUi9g7IQ_STclltwjk2fo3niDc2_AW79WuB3ewzmh9ql9FTtzNXqSRoP6qurZmbjPOCXscJvV5fFCbVh5xPC3FuQMk1",
+      "domain": "lbltc-2.azurewebsites.net",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "ARRAffinity",
+      "value": "bc076499a11c91231753e64e9765ff1ed1ccf1250ac8779f29466c4ddab3cf22",
+      "domain": ".lbltc-2.azurewebsites.net",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "ARRAffinitySameSite",
+      "value": "bc076499a11c91231753e64e9765ff1ed1ccf1250ac8779f29466c4ddab3cf22",
+      "domain": ".lbltc-2.azurewebsites.net",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "lbl_cookie_consent",
+      "value": "true",
+      "domain": "lbltc-2.azurewebsites.net",
+      "path": "/",
+      "expires": 1793016449.811334,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Strict"
+    }
+  ],
+  "origins": []
+}

@@ -1,0 +1,35 @@
+# Node
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Environment files
+.env
+.env.local
+.env.test
+
+# Playwright output
+test-results/
+playwright-report/
+blob-report/
+trace.zip
+*.zip
+
+# Logs
+logs/
+*.log
+
+# IDE / OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+out/
+coverage/
+build/
+
+# Playwright storage states
+tests/support/storageState*.json

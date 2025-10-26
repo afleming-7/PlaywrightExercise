@@ -1,0 +1,21 @@
+{
+  "name": "playwrightexercise",
+  "version": "1.0.0",
+  "description": "Playwright exercise",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afleming-7/PlaywrightExercise.git"
+  },
+  "homepage": "https://github.com/afleming-7/PlaywrightExercise#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.9.1",
+    "dotenv": "^17.2.3",
+    "typescript": "^5.9.3",
+    "zod": "^4.1.12"
+  }
+}
