@@ -14,6 +14,7 @@ playwright-report/
 blob-report/
 trace.zip
 *.zip
+downloads/
 
 # Logs
 logs/

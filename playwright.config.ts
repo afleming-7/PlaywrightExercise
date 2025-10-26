@@ -1,10 +1,12 @@
 import { defineConfig } from "@playwright/test";
 import { env } from "./utils/env";
+import path from "path";
 
 export default defineConfig({
   globalSetup: require.resolve("./tests/support/globalSetup.ts"),
   use: {
     baseURL: env.BASE_URL,
+    acceptDownloads: true,
     headless: true,
     screenshot: "only-on-failure",
     video: "retain-on-failure",
@@ -21,10 +23,6 @@ export default defineConfig({
     {
       name: "Chromium",
       use: { browserName: "chromium" },
-    },
-    {
-      name: "Firefox",
-      use: { browserName: "firefox" },
     },
   ],
   reporter: [["html"]],

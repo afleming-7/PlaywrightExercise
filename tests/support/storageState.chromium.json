@@ -2,17 +2,7 @@
   "cookies": [
     {
       "name": "LBL_SessionID",
-      "value": "a0bm3xlm5esmrgzaqmueqrkp",
-      "domain": "lbltc-2.azurewebsites.net",
-      "path": "/",
-      "expires": -1,
-      "httpOnly": true,
-      "secure": true,
-      "sameSite": "Strict"
-    },
-    {
-      "name": "__RequestVerificationToken",
-      "value": "MKA3XUPYDPCwokdXzHUi9g7IQ_STclltwjk2fo3niDc2_AW79WuB3ewzmh9ql9FTtzNXqSRoP6qurZmbjPOCXscJvV5fFCbVh5xPC3FuQMk1",
+      "value": "eyhe1jvbd2jpoeuxj0fr5tm1",
       "domain": "lbltc-2.azurewebsites.net",
       "path": "/",
       "expires": -1,
@@ -45,7 +35,27 @@
       "value": "true",
       "domain": "lbltc-2.azurewebsites.net",
       "path": "/",
-      "expires": 1793016449.811334,
+      "expires": 1793046167.999867,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "__RequestVerificationToken",
+      "value": "MVWo-chqHksakHTiXm3zYNEMQRu6wTfm2Ffw5y65-acjPBBsrJ29EC2z0ObD0eFqiV8S1cnvLHSPzHoBKBwLL0IQNu6WBg-ogIo_zi0N8l41",
+      "domain": "lbltc-2.azurewebsites.net",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    {
+      "name": ".ASPXAUTH",
+      "value": "D52183B3FE5CD674A4C4A92EBCECA6177480939E2C3D71524DFFA13B86ABC91109D0638A285E1D5B6367A44685E764569069BE6B84CCC86F244E212A93F2FBE78783817ADBABC72FCB91EDA90ACA54C5BC5413B55DBAD11BF924183ED286D544435F39EFB8720413B06C0141D503B6DD4DF14FBDBAF1F99FF26CF368CE107FA96E0D67206CF0B20748FBB5139C3EF113",
+      "domain": "lbltc-2.azurewebsites.net",
+      "path": "/",
+      "expires": -1,
       "httpOnly": true,
       "secure": true,
       "sameSite": "Strict"

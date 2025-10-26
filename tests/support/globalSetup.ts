@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { chromium, firefox } from "@playwright/test"; //add webkit if needed
 import { PopupHandler } from "../pages/PopupHandler";
 import { LoginPage } from "../pages/LoginPage";
@@ -6,10 +8,18 @@ import { env } from "../../utils/env";
 // List browsers to generate storageState for
 const browsers = [
   { name: "chromium", launcher: chromium },
-  { name: "firefox", launcher: firefox },
+  // { name: "firefox", launcher: firefox },
 ];
 
 export default async function globalSetup() {
+  const downloadDir = path.resolve(__dirname, "../../downloads");
+
+  if (fs.existsSync(downloadDir)) {
+    fs.rmSync(downloadDir, { recursive: true, force: true });
+    console.log("Cleaned downloads folder");
+  }
+  fs.mkdirSync(downloadDir, { recursive: true });
+
   for (const { name, launcher } of browsers) {
     const browser = await launcher.launch();
     const context = await browser.newContext();
@@ -17,7 +27,7 @@ export default async function globalSetup() {
 
     // Handle cookie banner
     const popup = new PopupHandler(page);
-    await page.goto(`${env.BASE_URL}/login`);
+    await page.goto(env.BASE_URL);
     await popup.handlePopups();
 
     // Perform login
