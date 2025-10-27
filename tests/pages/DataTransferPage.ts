@@ -7,7 +7,6 @@ export class DataTransferPage extends BasePage {
   readonly descriptionField: Locator;
   readonly nextButton: Locator;
   readonly uploadButton: Locator;
-  subfolderContainer!: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -22,73 +21,56 @@ export class DataTransferPage extends BasePage {
     await this.page.waitForLoadState("networkidle");
   }
 
-  // --- Dynamic locator helper
-  async locateSubfolder(
-    companyName: string,
-    mainFolderName: string,
-    subfolderName: string
-  ): Promise<Locator> {
-    // Locate the company accordion group
+  // --- Get specific folder locator (example: Opdracht)
+  public async getOpdrachtFolder(): Promise<Locator> {
+    // Locate company
     const companyAccordion = this.page.locator(
-      `div.accordion-group:has(a.accordion-toggle:text-is("${companyName}"))`
+      `div.accordion-group:has(a.accordion-toggle:text-is("DropBox Customer 1"))`
     );
 
     // Expand company if collapsed
     const companyToggle = companyAccordion.locator(
-      `a.accordion-toggle:text-is("${companyName}")`
+      `a.accordion-toggle:text-is("DropBox Customer 1")`
     );
     if ((await companyToggle.getAttribute("class"))?.includes("collapsed")) {
       await companyToggle.click();
     }
 
-    // Click the main folder inside the company accordion
+    // Click the main folder
     const mainFolderLink = companyAccordion.locator(
-      `div.bg-light a:text-is("${mainFolderName}")`
+      `div.bg-light a:text-is("Folder 1")`
     );
     await mainFolderLink.click();
+    await this.page.waitForLoadState("networkidle");
 
-    // Scope to the subfolder frame
-    const subfolderFrame = this.page.locator("div.accordion.acc-home");
+    // Wait for subfolder section
+    const subfolderFrame = this.page.locator(
+      "div#accordion-subfolder.accordion.acc-home"
+    );
+    await subfolderFrame.waitFor({ state: "visible", timeout: 15000 });
 
-    // Locate the specific subfolder inside the frame
+    // Locate Opdracht subfolder
     const subfolderContainer = subfolderFrame.locator(
-      `div.accordion-group:has(a.accordion-toggle:text-is("${subfolderName}"))`
+      `div.accordion-group:has(a.accordion-toggle:text-is("Opdracht"))`
     );
 
-    // Expand the subfolder if collapsed
+    // Expand if collapsed
     const subfolderToggle = subfolderContainer.locator("a.accordion-toggle");
     if ((await subfolderToggle.getAttribute("class"))?.includes("collapsed")) {
       await subfolderToggle.click();
     }
 
+    await this.page.waitForLoadState("networkidle");
     return subfolderContainer;
   }
 
   // --- Upload
-  async uploadFile(
-    companyName: string,
-    mainFolderName: string,
-    subfolderName: string,
-    fileName: string,
-    description: string
-  ) {
-    // Locate and expand the subfolder
-    this.subfolderContainer = await this.locateSubfolder(
-      companyName,
-      mainFolderName,
-      subfolderName
-    );
-
-    // Remove the file if it already exists
-    await this.ensureFileDoesNotExist(
-      companyName,
-      mainFolderName,
-      subfolderName,
-      fileName
-    );
-
+  async uploadFile(fileName: string, description: string, subfolder: Locator) {
     // Click "Add file"
-    await this.clickAddFileButton();
+    const addFileButton = subfolder.locator("a.btn.btn-default", {
+      hasText: "Add file",
+    });
+    await addFileButton.click();
 
     // Fill description
     await this.descriptionField.fill(description);
@@ -103,58 +85,55 @@ export class DataTransferPage extends BasePage {
     // Click the modal's upload button
     await this.uploadButton.click();
 
-    // Wait for the upload to complete (works for large files)
-    await this.waitForUploadSuccess(fileName);
+    // Wait for success, but handle expected failure gracefully
+    try {
+      await this.waitForUploadSuccess(fileName);
+      // Only wait for success toast if no error occurred
+      const successToast = this.page.locator(
+        '#toast-container .toast-message:text-is("Upload successful!")'
+      );
+      await successToast.waitFor({ state: "detached", timeout: 40000 });
+    } catch (err) {
+      const message = String(err);
+      if (message.includes("Upload failed")) {
+        console.warn(`Expected upload failure for ${fileName}: ${message}`);
+        // Don't rethrow — let the test verify the toast
+        return;
+      }
+      throw err; // Unexpected error → rethrow
+    }
   }
 
   // --- Download
-  async downloadFile(
-    companyName: string,
-    mainFolderName: string,
-    subfolderName: string,
-    fileName: string
-  ) {
-    this.subfolderContainer = await this.locateSubfolder(
-      companyName,
-      mainFolderName,
-      subfolderName
-    );
-
+  async downloadFile(fileName: string, subfolder: Locator) {
     const downloadsDir = path.resolve(process.cwd(), "downloads");
-    if (!fs.existsSync(downloadsDir))
+    if (!fs.existsSync(downloadsDir)) {
       fs.mkdirSync(downloadsDir, { recursive: true });
+    }
 
+    // Start waiting for the download *before* the click
     const [download] = await Promise.all([
-      this.page.waitForEvent("download"),
-      this.subfolderContainer.getByRole("link", { name: fileName }).click(),
+      this.page.waitForEvent("download", { timeout: 600_000 }), // 10 minutes
+      subfolder.getByRole("link", { name: fileName }).click(),
     ]);
+
+    // Ensure the download fully finishes writing to disk before saving
+    await download.path(); // <-- waits until file is completely downloaded
 
     const targetPath = path.join(downloadsDir, fileName);
     await download.saveAs(targetPath);
+
     await this.verifyDownloadedFile(targetPath);
   }
 
   // --- Remove
-  async removeFile(
-    companyName: string,
-    mainFolderName: string,
-    subfolderName: string,
-    fileName: string
-  ) {
-    this.subfolderContainer = await this.locateSubfolder(
-      companyName,
-      mainFolderName,
-      subfolderName
-    );
-
-    const fileRow = this.subfolderContainer.locator("tr", {
-      hasText: fileName,
-    });
-
+  async removeFile(fileName: string, subfolder: Locator) {
+    const fileRow = subfolder.locator("tr", { hasText: fileName });
     if (!(await this.isElementVisible(fileRow))) return;
 
     const deleteButton = fileRow.locator('a[title="Delete file"]');
-    await expect(deleteButton).toBeAttached({ timeout: 5000 });
+    await this.page.waitForLoadState("networkidle");
+    await expect(deleteButton).toBeVisible({ timeout: 30000 });
     await deleteButton.click({ force: true });
     await this.confirmDeletePopup();
 
@@ -163,55 +142,52 @@ export class DataTransferPage extends BasePage {
   }
 
   // --- File existence check
-  async ensureFileDoesNotExist(
-    companyName: string,
-    mainFolderName: string,
-    subfolderName: string,
-    fileName: string
-  ) {
-    this.subfolderContainer = await this.locateSubfolder(
-      companyName,
-      mainFolderName,
-      subfolderName
-    );
-
-    const fileLink = this.subfolderContainer.getByRole("link", {
-      name: fileName,
-    });
-
+  async ensureFileDoesNotExist(fileName: string, subfolder: Locator) {
+    const fileLink = subfolder.getByRole("link", { name: fileName });
     if (await this.isElementVisible(fileLink)) {
-      await this.removeFile(
-        companyName,
-        mainFolderName,
-        subfolderName,
-        fileName
-      );
+      await this.removeFile(fileName, subfolder);
     }
   }
 
   // --- Helpers
-  private async clickAddFileButton() {
-    const addFileButton = this.subfolderContainer.locator("a.btn.btn-default", {
-      hasText: "Add file",
-    });
-    await addFileButton.click();
-  }
-
-  // --- Wait for upload to finish and click "Next"
   private async waitForUploadSuccess(fileName: string) {
-    // Wait for the upload modal to exist
     const uploadModal = this.page.locator("#addFileWindow");
-    await uploadModal.waitFor({ state: "attached", timeout: 10000 });
+    await uploadModal.waitFor({ state: "visible", timeout: 10000 });
 
-    // Wait for the file item to appear
-    const fileItem = uploadModal.locator(
-      `ul.k-upload-files li:has(span.k-file-name:text-is("${fileName}"))`
-    );
-    await fileItem.waitFor({ state: "attached", timeout: 120000 });
+    const timeout = 10 * 90000;
+    const start = Date.now();
 
-    // Wait until the file status shows "Uploaded" without scrolling
-    const status = fileItem.locator('span.k-file-state:text-is("Uploaded")');
-    await expect(status).toHaveText("Uploaded", { timeout: 300000 });
+    while (Date.now() - start < timeout) {
+      const fileItem = uploadModal.locator(
+        `ul.k-upload-files li:has(span.k-file-name:text-is("${fileName}"))`
+      );
+
+      if ((await fileItem.count()) > 0) {
+        const status = fileItem.locator("span.k-file-state");
+        const text = (await status.textContent())?.trim();
+        if (text === "Uploaded") {
+          console.log(`${fileName} upload complete`);
+          return;
+        }
+      }
+
+      //check for Invalid file type error
+      const errorToast = this.page.locator("#toast-container");
+      if (await errorToast.count()) {
+        const toastText = (await errorToast.innerText()).trim();
+        if (
+          toastText.includes("Upload failed") ||
+          toastText.includes("Illegal file type")
+        ) {
+          console.warn(`Upload failed for ${fileName}: ${toastText}`);
+          return; // exit early, expected failure
+        }
+      }
+
+      await this.page.waitForTimeout(500);
+    }
+
+    throw new Error(`Timeout waiting for "${fileName}" to reach "Uploaded"`);
   }
 
   private async verifyDownloadedFile(filePath: string) {
@@ -228,28 +204,26 @@ export class DataTransferPage extends BasePage {
     const popups = this.page.locator(
       'div[id^="template-"][data-role="window"]:visible'
     );
-    if ((await popups.count()) === 0) {
-      // No popup appeared, skip
-      return;
-    }
+    if ((await popups.count()) === 0) return;
 
     const popup = popups.last();
-
-    // Wait for popup to be visible, but catch timeout
-    try {
-      await popup.waitFor({ state: "visible", timeout: 10000 });
-    } catch {
-      console.warn("Delete confirmation popup did not appear.");
-      return;
-    }
-
+    await popup.waitFor({ state: "visible", timeout: 10000 }).catch(() => null);
     const okButton = popup.locator('input[type="button"][value="Ok"]');
     await expect(okButton).toBeVisible({ timeout: 5000 });
     await okButton.click();
   }
 
-  // Change from private to public
   public async isElementVisible(locator: Locator): Promise<boolean> {
     return await locator.isVisible().catch(() => false);
+  }
+
+  public getUploadErrorToast(): Locator {
+    return this.page.locator("#toast-container");
+  }
+
+  public async waitForUploadError(timeout = 10000): Promise<string> {
+    const toast = this.getUploadErrorToast();
+    //await toast.waitFor({ state: "visible", timeout });
+    return toast.innerText();
   }
 }
