@@ -10,7 +10,8 @@ export class DataTransferPage extends BasePage {
   readonly descriptionField = this.page.locator("#FileViewModel_Description");
   readonly nextButton = this.page.locator("#addfileNext");
   readonly uploadButton = this.page.getByText(/upload selected file/i);
-  readonly okayButton = this.page.getByText(/ok/i);
+  //readonly okayButton = this.page.getByText(/ok/i);
+  readonly fileListTable = this.page.locator("#collapse-subfolder1209");
 
   constructor(page: Page) {
     super(page);
@@ -37,10 +38,8 @@ export class DataTransferPage extends BasePage {
     await this.uploadButton.click();
 
     await this.waitForUploadToast();
-    // await this.page.waitForSelector(`text=${fileName}`, { timeout: 20000 });
-    // await this.page.waitForLoadState("networkidle");
 
-    const fileLink = this.page.getByRole("link", { name: fileName });
+    const fileLink = this.fileListTable.getByRole("link", { name: fileName });
     await expect(fileLink).toBeVisible();
   }
 
@@ -53,7 +52,7 @@ export class DataTransferPage extends BasePage {
 
     const [download] = await Promise.all([
       this.page.waitForEvent("download"),
-      this.page.getByRole("link", { name: fileName }).click(),
+      this.fileListTable.getByRole("link", { name: fileName }).click(),
     ]);
 
     const targetPath = path.join(downloadsDir, fileName);
@@ -63,26 +62,25 @@ export class DataTransferPage extends BasePage {
     const stats = fs.statSync(targetPath);
     expect(stats.size).toBeGreaterThan(0);
 
-    //await download.whenFinished();
     console.log(`File downloaded successfully: ${targetPath}`);
   }
 
   async removeFile(fileName: string) {
-    await this.waitForUploadToast();
-
-    const fileRow = this.page.getByRole("link", { name: fileName });
+    const fileRow = this.fileListTable.locator("tr", { hasText: fileName });
     if (await fileRow.isVisible().catch(() => false)) {
-      const deleteButton = fileRow.getByTitle("Delete file");
+      const deleteButton = fileRow.locator('a[title="Delete file"]');
       await deleteButton.scrollIntoViewIfNeeded();
       await deleteButton.click({ force: true });
-      await this.okayButton.click();
+      await this.confirmDeletePopup();
       await this.page.waitForLoadState("networkidle");
       await expect(fileRow).not.toBeVisible({ timeout: 10000 });
     }
   }
 
   async ensureFileDoesNotExist(fileName: string) {
-    const fileLocator = this.page.getByRole("link", { name: fileName });
+    const fileLocator = this.fileListTable.getByRole("link", {
+      name: fileName,
+    });
     if (await fileLocator.isVisible().catch(() => false)) {
       await this.removeFile(fileName);
     }
@@ -94,5 +92,15 @@ export class DataTransferPage extends BasePage {
     });
     await toast.waitFor({ state: "visible", timeout: 5000 }).catch(() => null);
     await toast.waitFor({ state: "hidden", timeout: 10000 });
+  }
+
+  async confirmDeletePopup() {
+    const popup = this.page
+      .locator('div[id^="template-"][data-role="window"]:visible')
+      .last();
+    await popup.waitFor({ state: "visible", timeout: 10000 });
+    const okButton = popup.locator('input[type="button"][value="Ok"]');
+    await okButton.waitFor({ state: "visible", timeout: 5000 });
+    await okButton.click();
   }
 }

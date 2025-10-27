@@ -16,6 +16,9 @@ trace.zip
 *.zip
 downloads/
 
+# Playwright storage state files
+tests/support/storageState*.json
+
 # Logs
 logs/
 *.log
@@ -31,6 +34,3 @@ dist/
 out/
 coverage/
 build/
-
-# Playwright storage states
-tests/support/storageState*.json
