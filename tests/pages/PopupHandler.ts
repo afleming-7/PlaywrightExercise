@@ -8,11 +8,9 @@ export class PopupHandler {
   }
 
   /**
-   * Attempts to close any popup, alert, or cookie banner.
+   * Attempt to close any popups, alerts, or cookie banners.
    */
   async handlePopups() {
-    console.log("Checking for popups...");
-
     const popupSelectors = [
       'button:has-text("Accept")',
       'button:has-text("Agree")',
@@ -26,24 +24,24 @@ export class PopupHandler {
 
     for (const selector of popupSelectors) {
       const element = this.page.locator(selector);
-
-      if (await element.isVisible().catch(() => false)) {
-        console.log(`Dismissed popup using selector: ${selector}`);
+      if (await this.isVisible(element)) {
+        console.log(`Dismissing popup: ${selector}`);
         await element.click();
-
-        // Wait for THIS popup to disappear
         await element
           .waitFor({ state: "detached", timeout: 5000 })
           .catch(() => null);
-
-        await this.page.waitForTimeout(300); // slight delay before checking next
+        await this.page.waitForTimeout(300);
       }
     }
 
-    // Handle JavaScript alerts, confirm dialogs, etc.
+    // Handle JS dialogs
     this.page.once("dialog", async (dialog) => {
       console.log(`Dismissing JS dialog: ${dialog.message()}`);
       await dialog.dismiss();
     });
+  }
+
+  private async isVisible(locator: Locator): Promise<boolean> {
+    return await locator.isVisible().catch(() => false);
   }
 }

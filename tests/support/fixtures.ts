@@ -1,36 +1,23 @@
-import { test as base, Page } from "@playwright/test";
+import { test as base, Page, BrowserContext } from "@playwright/test";
 import { PopupHandler } from "../pages/PopupHandler";
 import { env } from "../../utils/env";
 
-// Extend the base test type with custom fixture
 type MyFixtures = {
   loggedInPage: Page;
 };
 
 export const test = base.extend<MyFixtures>({
   page: async ({ page, context }, use) => {
-    // Logged-out session cleanup
+    // Clean session
     await context.clearCookies();
     await context.clearPermissions();
-
     await page.goto(env.BASE_URL, { waitUntil: "domcontentloaded" });
-
     await page.evaluate(() => {
-      try {
-        localStorage.clear();
-        sessionStorage.clear();
-      } catch (e) {
-        console.warn("Could not clear storage:", e);
-      }
+      localStorage.clear();
+      sessionStorage.clear();
     });
 
-    // Handle JS dialogs
-    page.on("dialog", async (dialog) => {
-      console.log(`Dismissing dialog: ${dialog.message()}`);
-      await dialog.dismiss();
-    });
-
-    // Handle popups
+    // Dismiss popups
     const popup = new PopupHandler(page);
     await popup.handlePopups();
 
@@ -42,21 +29,18 @@ export const test = base.extend<MyFixtures>({
       }
     });
 
+    // Dismiss JS dialogs
+    page.on("dialog", async (dialog) => await dialog.dismiss());
+
     await use(page);
   },
 
-  // Logged-in fixture
   loggedInPage: async ({ browserName, browser }, use) => {
     const storageFile = `tests/support/storageState.${browserName}.json`;
-    const context = await browser.newContext({
-      storageState: storageFile,
-    });
-
+    const context = await browser.newContext({ storageState: storageFile });
     const page = await context.newPage();
-    await page.goto("about:blank"); // optional, just to ensure page is initialized
-
+    await page.goto("about:blank");
     await use(page);
-
     await context.close();
   },
 });
