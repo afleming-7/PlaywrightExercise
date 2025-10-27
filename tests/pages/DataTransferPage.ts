@@ -10,7 +10,6 @@ export class DataTransferPage extends BasePage {
   readonly descriptionField = this.page.locator("#FileViewModel_Description");
   readonly nextButton = this.page.locator("#addfileNext");
   readonly uploadButton = this.page.getByText(/upload selected file/i);
-  //readonly okayButton = this.page.getByText(/ok/i);
   readonly fileListTable = this.page.locator("#collapse-subfolder1209");
 
   constructor(page: Page) {

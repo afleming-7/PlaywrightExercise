@@ -36,7 +36,7 @@ export class PopupHandler {
           .waitFor({ state: "detached", timeout: 5000 })
           .catch(() => null);
 
-        await this.page.waitForTimeout(300); // optional short pause
+        await this.page.waitForTimeout(300); // slight delay before checking next
       }
     }
 

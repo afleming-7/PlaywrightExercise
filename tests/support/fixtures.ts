@@ -30,10 +30,6 @@ export const test = base.extend<MyFixtures>({
       await dialog.dismiss();
     });
 
-    // Navigate once
-    // await page.goto(env.BASE_URL);
-    // await page.waitForLoadState("networkidle");
-
     // Handle popups
     const popup = new PopupHandler(page);
     await popup.handlePopups();

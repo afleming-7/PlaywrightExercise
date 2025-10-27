@@ -18,6 +18,11 @@ downloads/
 # Playwright storage state files
 tests/support/storageState*.json
 
+# Output from Playwright screenshots/videos
+*.png
+*.webm
+*.mp4
+
 # Logs
 logs/
 *.log
@@ -33,3 +38,4 @@ dist/
 out/
 coverage/
 build/
+.cache/
