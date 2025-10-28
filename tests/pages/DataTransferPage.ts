@@ -21,16 +21,20 @@ export class DataTransferPage extends BasePage {
     await this.page.waitForLoadState("networkidle");
   }
 
-  // --- Get specific folder locator (example: Opdracht)
-  public async getOpdrachtFolder(): Promise<Locator> {
+  // --- Get specific folder locator dynamically
+  public async getFolder(
+    companyName: string,
+    mainFolderName: string,
+    subfolderName: string
+  ): Promise<Locator> {
     // Locate company
     const companyAccordion = this.page.locator(
-      `div.accordion-group:has(a.accordion-toggle:text-is("DropBox Customer 1"))`
+      `div.accordion-group:has(a.accordion-toggle:text-is("${companyName}"))`
     );
 
     // Expand company if collapsed
     const companyToggle = companyAccordion.locator(
-      `a.accordion-toggle:text-is("DropBox Customer 1")`
+      `a.accordion-toggle:text-is("${companyName}")`
     );
     if ((await companyToggle.getAttribute("class"))?.includes("collapsed")) {
       await companyToggle.click();
@@ -38,7 +42,7 @@ export class DataTransferPage extends BasePage {
 
     // Click the main folder
     const mainFolderLink = companyAccordion.locator(
-      `div.bg-light a:text-is("Folder 1")`
+      `div.bg-light a:text-is("${mainFolderName}")`
     );
     await mainFolderLink.click();
     await this.page.waitForLoadState("networkidle");
@@ -49,9 +53,9 @@ export class DataTransferPage extends BasePage {
     );
     await subfolderFrame.waitFor({ state: "visible", timeout: 15000 });
 
-    // Locate Opdracht subfolder
+    // Locate the subfolder
     const subfolderContainer = subfolderFrame.locator(
-      `div.accordion-group:has(a.accordion-toggle:text-is("Opdracht"))`
+      `div.accordion-group:has(a.accordion-toggle:text-is("${subfolderName}"))`
     );
 
     // Expand if collapsed
@@ -85,7 +89,7 @@ export class DataTransferPage extends BasePage {
     // Click the modal's upload button
     await this.uploadButton.click();
 
-    // Wait for success, but handle expected failure gracefully
+    // Wait for success or handle expected failure
     try {
       await this.waitForUploadSuccess(fileName);
       // Only wait for success toast if no error occurred
@@ -113,12 +117,12 @@ export class DataTransferPage extends BasePage {
 
     // Start waiting for the download *before* the click
     const [download] = await Promise.all([
-      this.page.waitForEvent("download", { timeout: 600_000 }), // 10 minutes
+      this.page.waitForEvent("download", { timeout: 600_000 }),
       subfolder.getByRole("link", { name: fileName }).click(),
     ]);
 
     // Ensure the download fully finishes writing to disk before saving
-    await download.path(); // <-- waits until file is completely downloaded
+    await download.path();
 
     const targetPath = path.join(downloadsDir, fileName);
     await download.saveAs(targetPath);
@@ -223,7 +227,6 @@ export class DataTransferPage extends BasePage {
 
   public async waitForUploadError(timeout = 10000): Promise<string> {
     const toast = this.getUploadErrorToast();
-    //await toast.waitFor({ state: "visible", timeout });
     return toast.innerText();
   }
 }

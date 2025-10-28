@@ -56,16 +56,16 @@ They aim to ensure the correctness, usability, and stability of the web applicat
 
 ### File Management
 
-| ID    | Test Case                                 | Steps                                           | Expected Result                                            |
-| ----- | ----------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------- |
-| DT-01 | Verify folder structure loads             | Open “DropBox Customer 1 / Folder 1 → Opdracht” | Correct folders visible                                    |
-| DT-02 | Verify file upload with no description    | Try uploading file without filling description  | Validation error appears                                   |
-| DT-03 | Upload large file                         | Upload file >10MB                               | Upload should fail or show error message                   |
-| DT-04 | Upload same file twice                    | Upload `File1.txt` twice                        | System prevents duplicates or overwrites with confirmation |
-| DT-05 | Verify file names are displayed correctly | Upload file with long name                      | Name is truncated gracefully                               |
-| DT-06 | Cancel upload mid-process                 | Start upload and cancel                         | Upload is aborted without saving                           |
-| DT-07 | Verify file download integrity            | Download a file and compare with local copy     | File content matches original                              |
-| DT-08 | Delete non-existent file                  | Try deleting already removed file               | Error handled gracefully                                   |
+| ID    | Test Case                                 | Steps                                           | Expected Result                                                                                               |
+| ----- | ----------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| DT-01 | Verify folder structure loads             | Open “DropBox Customer 1 / Folder 1 → Opdracht” | Correct folders visible                                                                                       |
+| DT-02 | Verify file upload with no description    | Try uploading file without filling description  | Validation error appears                                                                                      |
+| DT-03 | Upload large file                         | Upload file >10MB                               | Upload should fail or show error message                                                                      |
+| DT-04 | Upload same file twice                    | Upload `File1.txt` twice                        | System prevents duplicates or overwrites with confirmation or changes name to unique value (ex. adding "(1)") |
+| DT-05 | Verify file names are displayed correctly | Upload file with long name                      | Name is truncated gracefully                                                                                  |
+| DT-06 | Cancel upload mid-process                 | Start upload and cancel                         | Upload is aborted without saving                                                                              |
+| DT-07 | Verify file download integrity            | Download a file and compare with local copy     | File content matches original                                                                                 |
+| DT-08 | Delete non-existent file                  | Try deleting already removed file               | Error handled gracefully                                                                                      |
 
 ### UI & Accessibility
 
@@ -77,7 +77,7 @@ They aim to ensure the correctness, usability, and stability of the web applicat
 
 ---
 
-## ✅ Notes
+## Notes
 
 - All pages should be tested on **multiple browsers** (Chrome, Edge, Firefox).
 - Cross-check UI alignment and language localization (if supported).

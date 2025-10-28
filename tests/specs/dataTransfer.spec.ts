@@ -1,6 +1,11 @@
 import { test, expect } from "../support/fixtures";
 import { DataTransferPage } from "../pages/DataTransferPage";
 
+// 🗂️ Folder configuration (easy to change)
+const COMPANY = "DropBox Customer 1";
+const MAIN_FOLDER = "Folder 1";
+const SUBFOLDER = "Opdracht";
+
 // 🗂️ Files to test
 const FILES = [
   { name: "File1.txt", description: "Test file upload 1" },
@@ -13,7 +18,7 @@ test.describe("Data Transfer file operations", () => {
   test.beforeEach(async ({ loggedInPage }) => {
     const dtPage = new DataTransferPage(loggedInPage);
     await dtPage.gotoDataTransfer();
-    const subfolder = await dtPage.getOpdrachtFolder();
+    const subfolder = await dtPage.getFolder(COMPANY, MAIN_FOLDER, SUBFOLDER);
 
     // Optional cleanup before running each test
     for (const file of FILES) {
@@ -27,7 +32,7 @@ test.describe("Data Transfer file operations", () => {
     }) => {
       const dtPage = new DataTransferPage(loggedInPage);
       await dtPage.gotoDataTransfer();
-      const subfolder = await dtPage.getOpdrachtFolder();
+      const subfolder = await dtPage.getFolder(COMPANY, MAIN_FOLDER, SUBFOLDER);
 
       await test.step(`Upload ${file.name}`, async () => {
         await dtPage.uploadFile(file.name, file.description, subfolder);
@@ -44,10 +49,10 @@ test.describe("Data Transfer file operations", () => {
   }
 });
 
-test.only("Upload invalid file type shows error", async ({ loggedInPage }) => {
+test("Upload invalid file type shows error", async ({ loggedInPage }) => {
   const dtPage = new DataTransferPage(loggedInPage);
   await dtPage.gotoDataTransfer();
-  const subfolder = await dtPage.getOpdrachtFolder();
+  const subfolder = await dtPage.getFolder(COMPANY, MAIN_FOLDER, SUBFOLDER);
 
   const invalidFile = { name: "File3", description: "Test file upload 3" };
 
